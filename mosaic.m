@@ -24,5 +24,8 @@ function [mosaic] = mosaic(img)
     end;
 
     disp(['Unstacking image...'])
-    mosaic = lab2rgb(unstack_image(mosaic_stack, dimensions));
+    unstacked = unstack_image(mosaic_stack, dimensions);
+    [mse, snrval] = quality(img, unstacked);
+    disp(['Quality: MSE: ' num2str(mse) ' SNR: ' num2str(snrval)])
+    mosaic = lab2rgb(unstacked);
 end
