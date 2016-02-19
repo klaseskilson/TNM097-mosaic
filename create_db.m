@@ -1,4 +1,4 @@
-function [db] = create_db(folder)
+function [palette] = create_db(folder)
 %db = CREATE_DB(folder) Create an image database from the images in the folder `folder`
 %   If no folder is provided, `images` is assumed. The files are saved to
 %   `palette.mat` and returned as `db`.
@@ -18,10 +18,10 @@ function [db] = create_db(folder)
         fname = fullfile(folder, files{i});
         img = imsquare(imread(fname));
         img = rgb2lab(img);
-        db{i} = img;
+        palette{i} = img;
     end
     
-    save('palette.mat', 'db');
+    save('palette.mat', 'palette');
     
     disp(['Saved to palette.mat']);
 end
