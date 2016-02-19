@@ -8,15 +8,16 @@ function [mosaic] = mosaic(img)
     
     tile_width = 20;
     img = rgb2lab(img);
-    tiles = slice_motif(img, tile_width);
+    [stacked_image, dimensions] = stack_image(img, tile_width);
     for i = 1:numel(db)
-        db(1,i) = imresize(db(1,i), [tile_width tile_width]);
+        db{i} = imresize(db{i}, [tile_width tile_width]);
     end
     mean_values = get_mean(db, tile_width);
     
-    for i = 1:size(tiles, 4)
+    for i = 1:size(stacked_image, 4)
         % find best fitting small image
-        
+        index = find_match(stacked_image(:,:,:,i), mean_values);
+        mosaic(:,:,:,i) = db{index};
     end;
 
     mosaic = img;
