@@ -5,13 +5,19 @@ function [mosaic] = mosaic(img)
     addpath('helpers');
     load('palette.mat');
     
-    img = rgb2lab(img);
-    tiles = slice_motif(img, 20);
+    patch_size = 20;
     
+    for i = 1:numel(db)
+        db(1,i) = imresize(db(1,i), [patch_size patch_size]);
+    end
+    
+    img = rgb2lab(img);
+    tiles = slice_motif(img, patch_size);
     
     
     for i = 1:size(tiles, 4)
         % find best fitting small image
+        
     end;
 
     mosaic = img;
