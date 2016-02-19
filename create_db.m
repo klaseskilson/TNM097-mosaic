@@ -14,16 +14,14 @@ function [db] = create_db(folder)
     files = [dir(fullfile(folder,'*.jpg')); dir(fullfile(folder,'*.png'))];
     files = {files.name}';
     for i = 1:numel(files)
-        clear fname img img_5;
+        clear fname img;
         fname = fullfile(folder, files{i});
         img = imsquare(imread(fname));
         img = rgb2lab(img);
-        img_5 = imresize(img, [5 5]);
         db{i} = img;
-        mean_5(:,i) = mean_lab(img_5);
     end
     
-    save('palette.mat', 'db', 'mean_5');
+    save('palette.mat', 'db');
     
     disp(['Saved to palette.mat']);
 end
