@@ -33,7 +33,9 @@ function [mosaic] = mosaic(img, distance)
     end;
 
     % apply vector error diffusion
-    err = stacked_lab - stacked_mean;
+    correct = reshape(stacked_lab, [dimensions(1) dimensions(2) 3]);
+    estimated = reshape(stacked_mean, [dimensions(1) dimensions(2) 3]);
+    diffused = ved(correct, estimated);
 
     disp(['Unstacking image...'])
     unstacked = unstack_image(mosaic_stack, dimensions);

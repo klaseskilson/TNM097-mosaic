@@ -5,7 +5,7 @@ create_db();
 tic
 addpath('helpers');
 input_image = imread('images/happydog.png');
-result = mosaic(imsquare(input_image), 50);
+result = mosaic(imsquare(input_image), 20);
 subplot(1, 2, 1), imshow(imsquare(input_image))
 subplot(1, 2, 2), imshow(result)
 toc
