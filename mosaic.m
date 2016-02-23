@@ -21,11 +21,19 @@ function [mosaic] = mosaic(img, distance)
     mean_values = get_mean(palette, tile_width);
     
     disp(['Matching patches...'])
+    stacked_lab = zeros(size(mean_values));
+    stacked_mean = zeros(size(mean_values));
+    mosaic_stack = zeros(size(stacked_image));
     for i = 1:size(stacked_image, 4)
         % find best fitting small image
-        index = find_match(mean_lab(stacked_image(:,:,:,i)), mean_values);
+        stacked_lab(i, :) = mean_lab(stacked_image(:,:,:,i));
+        index = find_match(stacked_lab(i, :), mean_values);
+        stacked_mean(i, :) = mean_values(index, :);
         mosaic_stack(:,:,:,i) = imresize(palette{index}, [tile_width tile_width]);
     end;
+
+    % apply vector error diffusion
+    err = stacked_lab - stacked_mean;
 
     disp(['Unstacking image...'])
     unstacked = unstack_image(mosaic_stack, dimensions);
