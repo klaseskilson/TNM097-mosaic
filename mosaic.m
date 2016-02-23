@@ -9,9 +9,9 @@ function [mosaic] = mosaic(img, distance)
     tilePerDeg = 3;
     ppi = 120;
     side = size(img, 2);
-    sampPerDeg = side * (distance / 2.54) * tan(pi/180)
-    s = atan((side / ppi) / (distance / 2.54)) * (180 / pi)
-    tile_width = min([floor(sampPerDeg / tilePerDeg) side])
+    sampPerDeg = side * (distance / 2.54) * tan(pi/180);
+    % s = atan((side / ppi) / (distance / 2.54)) * (180 / pi);
+    tile_width = min([floor(sampPerDeg / tilePerDeg) side]);
     
     % convert color space and stack image
     img = rgb2lab(img);
@@ -29,13 +29,19 @@ function [mosaic] = mosaic(img, distance)
         stacked_lab(i, :) = mean_lab(stacked_image(:,:,:,i));
         index = find_match(stacked_lab(i, :), mean_values);
         stacked_mean(i, :) = mean_values(index, :);
-        mosaic_stack(:,:,:,i) = imresize(palette{index}, [tile_width tile_width]);
     end;
 
     % apply vector error diffusion
     correct = reshape(stacked_lab, [dimensions(1) dimensions(2) 3]);
     estimated = reshape(stacked_mean, [dimensions(1) dimensions(2) 3]);
     diffused = ved(correct, estimated);
+    diffused = reshape(diffused, [(dimensions(1) * dimensions(2)) 3]);
+    
+    for i = 1:size(stacked_image, 4)
+        % find best fitting small image
+        index = find_match(diffused(i, :), mean_values);
+        mosaic_stack(:,:,:,i) = imresize(palette{index}, [tile_width tile_width]);
+    end;
 
     disp(['Unstacking image...'])
     unstacked = unstack_image(mosaic_stack, dimensions);
