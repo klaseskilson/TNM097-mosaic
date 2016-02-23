@@ -1,18 +1,22 @@
-function [mosaic] = mosaic(img)
-%MOSAIC(img) Create an mosaic of the RGB image img
+function [mosaic] = mosaic(img, distance)
+%MOSAIC(img, distance) Create an mosaic of the RGB image img
 %   Taking the RGB image `img`, an mosaic image is created using the image
 %   database in palette.mat
     addpath('helpers');
     load('palette.mat'); % loads db
     
+    % calculate number of tiles per degree
+    tilePerDeg = 3;
+    ppi = 120;
+    side = size(img, 2);
+    sampPerDeg = side * (distance / 2.54) * tan(pi/180)
+    s = atan((side / ppi) / (distance / 2.54)) * (180 / pi)
+    tile_width = min([floor(sampPerDeg / tilePerDeg) side])
     
-    tile_width = 20;
+    % convert color space and stack image
     img = rgb2lab(img);
     disp(['Stacking image...'])
     [stacked_image, dimensions] = stack_image(img, tile_width);
-%     for i = 1:numel(db)
-%         db{i} = imresize(db{i}, [tile_width tile_width]);
-%     end
     disp(['Getting mean values for palette...'])
     mean_values = get_mean(palette, tile_width);
     

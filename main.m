@@ -3,9 +3,10 @@ create_db();
 
 %% Create mosaic image
 tic
-input_image = imread('images/morena.jpg');
-result = mosaic(input_image);
-subplot(1, 2, 1), imshow(input_image)
+addpath('helpers');
+input_image = imread('images/happydog.png');
+result = mosaic(imsquare(input_image), 50);
+subplot(1, 2, 1), imshow(imsquare(input_image))
 subplot(1, 2, 2), imshow(result)
 toc
 
