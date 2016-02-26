@@ -3,7 +3,7 @@ function [mosaic] = mosaic(img, distance)
 %   Taking the RGB image `img`, an mosaic image is created using the image
 %   database in palette.mat
     addpath('helpers');
-    load('palette.mat'); % loads db
+    load('palette.mat'); % loads palette
     
     % calculate number of tiles per degree
     tilePerDeg = 3;
@@ -14,32 +14,33 @@ function [mosaic] = mosaic(img, distance)
     tile_width = min([floor(sampPerDeg / tilePerDeg) side]);
     
     % convert color space and stack image
-    img = rgb2lab(img);
+    img = rgb2xyz(img);
     disp(['Stacking image...'])
     [stacked_image, dimensions] = stack_image(img, tile_width);
     disp(['Getting mean values for palette...'])
-    mean_values = get_mean(palette, tile_width);
+    [palette_mean_xyz, palette_mean_lab] = get_mean(palette, tile_width);
     
     disp(['Matching patches...'])
-    stacked_lab = zeros(size(mean_values));
-    stacked_mean = zeros(size(mean_values));
+    stacked_mean = zeros(size(palette_mean_xyz));
+    stacked_palette = zeros(size(palette_mean_xyz));
     mosaic_stack = zeros(size(stacked_image));
     for i = 1:size(stacked_image, 4)
-        % find best fitting small image
-        stacked_lab(i, :) = mean_lab(stacked_image(:,:,:,i));
-        index = find_match(stacked_lab(i, :), mean_values);
-        stacked_mean(i, :) = mean_values(index, :);
+        % find best fitting small image for each tile
+        stacked_mean(i, :) = mean_color(stacked_image(:,:,:,i));
+        index = find_match(stacked_mean(i, :), palette_mean_lab);
+        stacked_palette(i, :) = palette_mean_xyz(index, :);
     end;
 
     % apply vector error diffusion
-    correct = reshape(stacked_lab, [dimensions(1) dimensions(2) 3]);
-    estimated = reshape(stacked_mean, [dimensions(1) dimensions(2) 3]);
+    disp(['Applying VED...'])
+    correct = reshape(stacked_mean, [dimensions(1) dimensions(2) 3]);
+    estimated = reshape(stacked_palette, [dimensions(1) dimensions(2) 3]);
     diffused = ved(correct, estimated);
     diffused = reshape(diffused, [(dimensions(1) * dimensions(2)) 3]);
     
     for i = 1:size(stacked_image, 4)
         % find best fitting small image
-        index = find_match(diffused(i, :), mean_values);
+        index = find_match(stacked_mean(i, :), palette_mean_lab);
         mosaic_stack(:,:,:,i) = imresize(palette{index}, [tile_width tile_width]);
     end;
 
@@ -47,5 +48,5 @@ function [mosaic] = mosaic(img, distance)
     unstacked = unstack_image(mosaic_stack, dimensions);
     [mse, snrval] = quality(img, unstacked);
     disp(['Quality: MSE: ' num2str(mse) ' SNR: ' num2str(snrval)])
-    mosaic = lab2rgb(unstacked);
+    mosaic = xyz2rgb(unstacked);
 end

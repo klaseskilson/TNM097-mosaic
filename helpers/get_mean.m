@@ -1,12 +1,14 @@
-function [mean_values] = get_mean(db, widht)
+function [mean_values_xyz, mean_values_lab] = get_mean(db, widht)
 %GET_MEAN(db, widht) Calculate mean LAB values for images in db
 %   db - the cell array containing images
 %   widht - the width to resize the images to before 
     l = numel(db);
-    mean_values = zeros(l,3);
+    mean_values_xyz = zeros(l,3);
+    mean_values_lab = zeros(l,3);
     for i = 1:l;
         clear img;
         img = imresize(db{i}, [widht widht]);
-        mean_values(i,:) = mean_lab(img);
+        mean_values_xyz(i,:) = mean_color(img);
+        mean_values_lab(i,:) = xyz2lab(mean_values_xyz(i,:));
     end
 end

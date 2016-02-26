@@ -17,7 +17,7 @@ function [palette] = create_db(folder)
         clear fname img;
         fname = fullfile(folder, files{i});
         img = imsquare(imread(fname));
-        img = rgb2lab(img);
+        img = rgb2xyz(img);
         palette{i} = img;
     end
     
