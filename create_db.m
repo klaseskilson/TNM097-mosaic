@@ -18,6 +18,7 @@ function [palette] = create_db(folder)
         fname = fullfile(folder, files{i});
         img = imsquare(imread(fname));
         img = rgb2xyz(img);
+        img = imresize(img, [150 150], 'nearest');
         palette{i} = img;
     end
     
