@@ -12,13 +12,14 @@ function [mosaic] = mosaic(img, distance)
     sampPerDeg = side * (distance / 2.54) * tan(pi/180);
     % s = atan((side / ppi) / (distance / 2.54)) * (180 / pi);
     tile_width = min([floor(sampPerDeg / tilePerDeg) side]);
+    db_im_width = size(palette{1}, 1);
     
     % convert color space and stack image
     img = rgb2xyz(img);
     disp(['Stacking image...'])
-    [stacked_image, dimensions] = stack_image(img, tile_width);
+    [stacked_image, dimensions] = stack_image(img, tile_width, db_im_width);
     disp(['Getting mean values for palette...'])
-    [palette_mean_xyz, palette_mean_lab] = get_mean(palette, tile_width);
+    [palette_mean_xyz, palette_mean_lab] = get_mean(palette);
     
     disp(['Matching patches...'])
     stacked_mean = zeros(size(palette_mean_xyz));
@@ -40,13 +41,14 @@ function [mosaic] = mosaic(img, distance)
     
     for i = 1:size(stacked_image, 4)
         % find best fitting small image
-        index = find_match(diffused(i, :), palette_mean_lab);
-        mosaic_stack(:,:,:,i) = imresize(palette{index}, [tile_width tile_width]);
+        index = find_match(stacked_mean(i, :), palette_mean_lab);
+        mosaic_stack(:,:,:,i) = palette{index};
     end;
 
     disp(['Unstacking image...'])
-    unstacked = unstack_image(mosaic_stack, dimensions);
-    clab = quality(img, unstacked, sampPerDeg);
+    unstacked_result = unstack_image(mosaic_stack, dimensions);
+    unstacked_original = unstack_image(stacked_image, dimensions);
+    clab = quality(unstacked_original, unstacked_result, sampPerDeg);
     disp(['Quality: SCieLab: ' num2str(clab)])
-    mosaic = xyz2rgb(unstacked);
+    mosaic = xyz2rgb(unstacked_result);
 end
