@@ -1,6 +1,7 @@
-function [ res ] = dist(a, b)
-%DIST(a,b) Calculate eucledian distance between a and b
+function [ res ] = dist(a, b, range)
+%DIST(a, b, range) Calculate eucledian distance between a and b
 %   Both a and b are 1xN vectors
-    res = sqrt(sum((a - b) .^ 2));
+%   range specifies which elements to use
+    res = sqrt(sum((a(range) - b(range)) .^ 2));
 end
 

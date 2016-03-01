@@ -20,6 +20,9 @@ function [mosaic] = mosaic(img, distance)
     disp(['Getting mean values for palette...'])
     [palette_mean_xyz, palette_mean_lab] = get_mean(palette, tile_width);
     
+    % only match on ab channels
+    match_range = 2:3;
+    
     disp(['Matching patches...'])
     stacked_mean = zeros(size(palette_mean_xyz));
     stacked_palette = zeros(size(palette_mean_xyz));
@@ -27,7 +30,7 @@ function [mosaic] = mosaic(img, distance)
     for i = 1:size(stacked_image, 4)
         % find best fitting small image for each tile
         stacked_mean(i, :) = mean_color(stacked_image(:,:,:,i));
-        index = find_match(stacked_mean(i, :), palette_mean_lab);
+        index = find_match(stacked_mean(i, :), palette_mean_lab, match_range);
         stacked_palette(i, :) = palette_mean_xyz(index, :);
     end;
 
@@ -40,8 +43,10 @@ function [mosaic] = mosaic(img, distance)
     
     for i = 1:size(stacked_image, 4)
         % find best fitting small image
-        index = find_match(diffused(i, :), palette_mean_lab);
-        mosaic_stack(:,:,:,i) = imresize(palette{index}, [tile_width tile_width]);
+        index = find_match(stacked_palette(i, :), palette_mean_lab, match_range);
+        tile_img = imresize(palette{index}, [tile_width tile_width]);
+%         mosaic_stack(:,:,:,i) = lab2xyz(compensate_light(palette_mean_lab(index, :), xyz2lab(tile_img)));
+        mosaic_stack(:,:,:,i) = tile_img;
     end;
 
     disp(['Unstacking image...'])
