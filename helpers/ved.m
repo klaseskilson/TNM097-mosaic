@@ -3,11 +3,18 @@ function [output] = ved(correct, estimated)
 %estimated
 %   Detailed explanation goes here
 
-    weights = [1 3 5 3 1;
-               3 5 7 5 3;
-               5 7 0 0 0;
-               0 0 0 0 0;
-               0 0 0 0 0];
+%     weights = [1 3 5 3 1;
+%                3 5 7 5 3;
+%                5 7 0 0 0;
+%                0 0 0 0 0;
+%                0 0 0 0 0];
+%     weights = [0 0 0 0 0;
+%                0 0 0 0 0;
+%                0 0 0 7 5;
+%                3 5 7 5 3;
+%                1 3 5 3 1];
+    weights = [0 0 7;
+               3 5 1;];
     weights = weights / sum(weights);
     filt(:,:,1) = weights;
     filt(:,:,2) = weights;
