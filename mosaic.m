@@ -3,15 +3,12 @@ function [mosaic] = mosaic(img, distance)
 %   Taking the RGB image `img`, an mosaic image is created using the image
 %   database in palette.mat
     addpath('helpers');
+    addpath('helpers/scielab');
     load('palette.mat'); % loads palette
     
-    % calculate number of tiles per degree
-    tilePerDeg = 3;
     ppi = 120;
-    side = size(img, 2);
-    sampPerDeg = side * (distance / 2.54) * tan(pi/180);
-    % s = atan((side / ppi) / (distance / 2.54)) * (180 / pi);
-    tile_width = min([floor(sampPerDeg / tilePerDeg) side]);
+    sampPerDeg = 5;
+    tile_width = ceil((ppi  * (distance / 2.54) * tan(pi/180)) / sampPerDeg)
     db_im_width = size(palette{1}, 1);
     
     % convert color space and stack image
@@ -22,7 +19,7 @@ function [mosaic] = mosaic(img, distance)
     [palette_mean_xyz, palette_mean_lab] = get_mean(palette);
     
     % only match on ab channels
-    match_range = 2:3;
+    match_range = 1:3;
     
     disp(['Matching patches...'])
     stacked_mean = zeros(size(palette_mean_xyz));
@@ -44,16 +41,18 @@ function [mosaic] = mosaic(img, distance)
     
     for i = 1:size(stacked_image, 4)
         % find best fitting small image
-        index = find_match(stacked_palette(i, :), palette_mean_lab, match_range);
+        index = find_match(diffused(i, :), palette_mean_lab, match_range);
         tile_img = palette{index};
-        mosaic_stack(:,:,:,i) = lab2xyz(compensate_light(palette_mean_lab(index, :), xyz2lab(tile_img)));
-        % mosaic_stack(:,:,:,i) = tile_img;
+        %mosaic_stack(:,:,:,i) = lab2xyz(compensate_light(xyz2lab(stacked_mean(index, :)), xyz2lab(tile_img)));
+        mosaic_stack(:,:,:,i) = tile_img;
     end;
 
     disp(['Unstacking image...'])
     unstacked_result = unstack_image(mosaic_stack, dimensions);
-%     unstacked_original = unstack_image(stacked_image, dimensions);
-%     clab = quality(unstacked_original, unstacked_result, sampPerDeg);
-%     disp(['Quality: SCieLab: ' num2str(clab)])
+    unstacked_original = unstack_image(stacked_image, dimensions);
+    
+    disp(['Finding quality...'])
+    clab = quality(unstacked_original, unstacked_result, sampPerDeg);
+    disp(['Quality: SCieLab: ' num2str(clab)])
     mosaic = xyz2rgb(unstacked_result);
 end

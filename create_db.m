@@ -6,6 +6,8 @@ function [palette] = create_db(folder)
         folder = 'images';
     end
     
+    img_size = 50;
+    
     addpath('helpers');
     clear db mean_5;
     disp(['Creating database from folder ' folder]);
@@ -18,7 +20,7 @@ function [palette] = create_db(folder)
         fname = fullfile(folder, files{i});
         img = imsquare(imread(fname));
         img = rgb2xyz(img);
-        img = imresize(img, [150 150], 'nearest');
+        img = imresize(img, [img_size img_size], 'nearest');
         palette{i} = img;
     end
     
