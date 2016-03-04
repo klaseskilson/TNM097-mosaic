@@ -5,9 +5,9 @@ function [new_image] = compensate_light(reference, image)
     mean_l = mean(light(:));
     reference_l = reference(1);
     
-    ratio = reference_l / mean_l;
+    difference = mean_l - reference_l;
     
-    image(:,:,1) = light * ratio;
+    image(:,:,1) = image(:,:,1) + difference;
     new_image = image;
 end
 
