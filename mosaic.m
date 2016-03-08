@@ -41,10 +41,11 @@ function [mosaic] = mosaic(img, distance)
     
     for i = 1:size(stacked_image, 4)
         % find best fitting small image
+        % index = find_match(stacked_mean(i, :), palette_mean_lab, match_range);
         index = find_match(diffused(i, :), palette_mean_lab, match_range);
         tile_img = palette{index};
-        %mosaic_stack(:,:,:,i) = lab2xyz(compensate_light(xyz2lab(stacked_mean(index, :)), xyz2lab(tile_img)));
-        mosaic_stack(:,:,:,i) = tile_img;
+        mosaic_stack(:,:,:,i) = lab2xyz(compensate_light(xyz2lab(stacked_mean(i, :)), xyz2lab(tile_img)));
+        % mosaic_stack(:,:,:,i) = tile_img;
     end;
 
     disp(['Unstacking image...'])
@@ -52,7 +53,7 @@ function [mosaic] = mosaic(img, distance)
     unstacked_original = unstack_image(stacked_image, dimensions);
     
     disp(['Finding quality...'])
-    clab = quality(unstacked_original, unstacked_result, sampPerDeg);
+    clab = quality(unstacked_original, unstacked_result, ppi / db_im_width);
     disp(['Quality: SCieLab: ' num2str(clab)])
     mosaic = xyz2rgb(unstacked_result);
 end

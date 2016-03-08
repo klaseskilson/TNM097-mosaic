@@ -4,8 +4,9 @@ create_db();
 %% Create mosaic image
 tic
 addpath('helpers');
-input_image = imread('images/eye.png');
-result = mosaic(input_image, 100);
+input_image = imread('images/morena.jpg');
+result = mosaic(input_image, 200);
+figure;
 subplot(1, 2, 1), imshow(input_image)
 subplot(1, 2, 2), imshow(result)
 toc
