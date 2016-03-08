@@ -20,6 +20,6 @@ function [output] = ved(correct, estimated)
     err = correct - estimated;
     err_filt = imfilter(err, weights);
     
-    output = correct + err_filt;
+    output = err_filt;
 end
 

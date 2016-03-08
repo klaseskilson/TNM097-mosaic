@@ -1,10 +1,20 @@
-function [mosaic] = mosaic(img, distance)
+function [mosaic] = mosaic(img, distance, error_diff)
 %MOSAIC(img, distance) Create an mosaic of the RGB image img
 %   Taking the RGB image `img`, an mosaic image is created using the image
 %   database in palette.mat
     addpath('helpers');
     addpath('helpers/scielab');
     load('palette.mat'); % loads palette
+    
+    if nargin < 3
+        error_diff = 1;
+        disp('Assuming error diff');
+    end
+    
+    if nargin < 2
+        distance = 100;
+        disp(['Setting distance to ' num2str(distance)]);
+    end
     
     ppi = 120;
     sampPerDeg = 5;
@@ -19,33 +29,37 @@ function [mosaic] = mosaic(img, distance)
     [palette_mean_xyz, palette_mean_lab] = get_mean(palette);
     
     % only match on ab channels
-    match_range = 1:3;
+    match_range = 2:3;
     
     disp(['Matching patches...'])
     stacked_mean = zeros(size(palette_mean_xyz));
-    stacked_palette = zeros(size(palette_mean_xyz));
     mosaic_stack = zeros(size(stacked_image));
     for i = 1:size(stacked_image, 4)
         % find best fitting small image for each tile
         stacked_mean(i, :) = mean_color(stacked_image(:,:,:,i));
         index = find_match(stacked_mean(i, :), palette_mean_lab, match_range);
-        stacked_palette(i, :) = palette_mean_xyz(index, :);
+        tile_img = palette{index};
+        color_compensated_stack(:,:,:,i) = lab2xyz(compensate_light(xyz2lab(stacked_mean(i, :)), xyz2lab(tile_img)));
+        color_compensated_stack_mean(i, :) = mean_color(color_compensated_stack(:,:,:,i));
     end;
 
     % apply vector error diffusion
-    disp(['Applying VED...'])
-    correct = reshape(stacked_mean, [dimensions(1) dimensions(2) 3]);
-    estimated = reshape(stacked_palette, [dimensions(1) dimensions(2) 3]);
-    diffused = ved(correct, estimated);
-    diffused = reshape(diffused, [(dimensions(1) * dimensions(2)) 3]);
+    if error_diff == 1
+        disp(['Applying VED...'])
+        correct = reshape(stacked_mean, [dimensions(1) dimensions(2) 3]);
+        estimated = reshape(color_compensated_stack_mean, [dimensions(1) dimensions(2) 3]);
+        diffused = ved(correct, estimated);
+        diffused = reshape(diffused, [(dimensions(1) * dimensions(2)) 3]);
+    end
     
     for i = 1:size(stacked_image, 4)
-        % find best fitting small image
-        % index = find_match(stacked_mean(i, :), palette_mean_lab, match_range);
-        index = find_match(diffused(i, :), palette_mean_lab, match_range);
-        tile_img = palette{index};
-        mosaic_stack(:,:,:,i) = lab2xyz(compensate_light(xyz2lab(stacked_mean(i, :)), xyz2lab(tile_img)));
-        % mosaic_stack(:,:,:,i) = tile_img;
+        tile_img = color_compensated_stack(:,:,:,i);
+        if error_diff == 1
+            diff_matrix = zeros(1,1,3);
+            diff_matrix(:,:) = diffused(i,:);
+            tile_img = tile_img + repmat(diff_matrix, size(tile_img(:,:,1)));
+        end
+        mosaic_stack(:,:,:,i) = tile_img;
     end;
 
     disp(['Unstacking image...'])
