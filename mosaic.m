@@ -8,6 +8,7 @@ function [mosaic] = mosaic(img, distance, error_diff, color_compensate)
     
     if nargin < 4
         color_compensate = 1;
+        disp('Using color compensation');
     end
     
     if nargin < 3
@@ -44,7 +45,6 @@ function [mosaic] = mosaic(img, distance, error_diff, color_compensate)
         index = find_match(stacked_mean(i, :), palette_mean_lab, match_range);
         tile_img = palette{index};
         if color_compensate == 1;
-            disp('cc')
             chosen_stack(:,:,:,i) = lab2xyz(compensate_light(xyz2lab(stacked_mean(i, :)), xyz2lab(tile_img)));
             chosen_mean(i, :) = mean_color(chosen_stack(:,:,:,i));
         else
